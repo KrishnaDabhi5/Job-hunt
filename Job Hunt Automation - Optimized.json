@@ -1,0 +1,571 @@
+{
+  "name": "Job Hunt Automation - Optimized",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "0fbe0017-51ca-4a54-911d-ec3abe81aca1",
+      "name": "Daily 9 AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2048,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "jobRole",
+              "value": "internship",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "jobLocation",
+              "value": "India",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "jobKeywords",
+              "value": "Data, AI, Machine Learning",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "minMatchScore",
+              "value": 60,
+              "type": "number"
+            },
+            {
+              "id": "5",
+              "name": "userEmail",
+              "value": "krishnadabhi59@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "slackChannel",
+              "value": "C09RPGPF9K4",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "resumeFileId",
+              "value": "1x6Nhd4L-oAHSpdNtr3zPNykF4LeCXLKH",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8da6d2d5-63e4-48fe-b88a-c431961c7968",
+      "name": "Job Search Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1824,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "19J2ffggywmrqwBEUstrR4sNRSWl7Q4bKC-nSSpBp6y0",
+          "mode": "list",
+          "cachedResultName": "job hunt",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19J2ffggywmrqwBEUstrR4sNRSWl7Q4bKC-nSSpBp6y0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1578883085,
+          "mode": "list",
+          "cachedResultName": "Job Search Config",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19J2ffggywmrqwBEUstrR4sNRSWl7Q4bKC-nSSpBp6y0/edit#gid=1578883085"
+        },
+        "options": {}
+      },
+      "id": "a7599494-850e-4cb2-ad5a-6d95a493abe7",
+      "name": "Get User Profile",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1600,
+        688
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "mYGlwzfjcMqFN1IR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google_jobs"
+            },
+            {
+              "name": "q",
+              "value": "={{ $('Job Search Config').item.json.jobRole + ' ' + $('Job Search Config').item.json.jobKeywords + ' in ' + $('Job Search Config').item.json.jobLocation }}"
+            },
+            {
+              "name": "location",
+              "value": "={{ $('Job Search Config').item.json.jobLocation }}"
+            },
+            {
+              "name": "api_key",
+              "value": "22a9aaa40c13f71b8c4dff7812cec0436dccb444d390c369ae7265c690a9237f"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ace77d8c-85d3-46bb-8c32-b09a7d181b0c",
+      "name": "Search Google Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1376,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and structure job data from Google Jobs API response\nconst items = $input.all();\nconst jobs = [];\n\nfor (const item of items) {\n  const jobsData = item.json.jobs_results || [];\n  \n  for (const job of jobsData) {\n    jobs.push({\n      json: {\n        title: job.title || '',\n        company: job.company_name || '',\n        location: job.location || '',\n        description: job.description || '',\n        salary: job.detected_extensions?.salary || 'Not specified',\n        applicationUrl: job.apply_options?.[0]?.link || job.share_url || '',\n        postedDate: job.detected_extensions?.posted_at || 'Recently',\n        jobType: job.detected_extensions?.schedule_type || 'Full-time',\n        requiredSkills: (job.description || '').toLowerCase().match(/\\b(python|java|javascript|react|node|sql|aws|docker|kubernetes|machine learning|data science|ai|tensorflow|pytorch)\\b/gi) || []\n      }\n    });\n  }\n}\n\nreturn jobs.slice(0, 20); // Limit to top 20 jobs"
+      },
+      "id": "ad3c88e2-d61d-49db-86cb-c8b86876259e",
+      "name": "Parse Job Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Smart job scoring algorithm\nconst jobs = $input.all();\nconst profile = $('Get User Profile').first().json;\nconst config = $('Job Search Config').first().json;\n\n// Parse user skills\nconst userSkills = (profile.skills || '').toLowerCase().split(',').map(s => s.trim());\nconst preferredLocations = (profile.preferredLocation || '').toLowerCase().split(',').map(l => l.trim());\nconst culturePrefs = (profile.culturePreferences || '').toLowerCase().split(',').map(c => c.trim());\n\nconst scoredJobs = [];\n\nfor (const item of jobs) {\n  const job = item.json;\n  let score = 0;\n  const breakdown = {};\n  \n  // 1. Skill Match (40 points)\n  const jobSkills = job.requiredSkills.map(s => s.toLowerCase());\n  const matchingSkills = userSkills.filter(skill => \n    jobSkills.some(js => js.includes(skill) || skill.includes(js))\n  );\n  const skillScore = jobSkills.length > 0 \n    ? (matchingSkills.length / jobSkills.length) * 40 \n    : 20; // Neutral if no skills detected\n  score += skillScore;\n  breakdown.skillMatch = Math.round(skillScore);\n  \n  // 2. Location Match (25 points)\n  const jobLocation = job.location.toLowerCase();\n  let locationScore = 5; // Base score\n  if (jobLocation.includes('remote')) {\n    locationScore = 25;\n  } else if (preferredLocations.some(loc => jobLocation.includes(loc))) {\n    locationScore = 25;\n  } else if (jobLocation.includes('india')) {\n    locationScore = 15;\n  }\n  score += locationScore;\n  breakdown.locationMatch = locationScore;\n  \n  // 3. Job Type Match (15 points)\n  const jobType = job.jobType.toLowerCase();\n  let typeScore = 10;\n  if (config.jobRole.toLowerCase().includes('intern') && jobType.includes('intern')) {\n    typeScore = 15;\n  } else if (jobType.includes('full-time') || jobType.includes('contract')) {\n    typeScore = 12;\n  }\n  score += typeScore;\n  breakdown.jobTypeMatch = typeScore;\n  \n  // 4. Recency (10 points)\n  const posted = job.postedDate.toLowerCase();\n  let recencyScore = 5;\n  if (posted.includes('today') || posted.includes('hour')) {\n    recencyScore = 10;\n  } else if (posted.includes('yesterday') || posted.includes('day')) {\n    recencyScore = 8;\n  }\n  score += recencyScore;\n  breakdown.recency = recencyScore;\n  \n  // 5. Keyword Match (10 points)\n  const keywords = config.jobKeywords.toLowerCase().split(',').map(k => k.trim());\n  const titleAndDesc = (job.title + ' ' + job.description).toLowerCase();\n  const keywordMatches = keywords.filter(kw => titleAndDesc.includes(kw));\n  const keywordScore = (keywordMatches.length / keywords.length) * 10;\n  score += keywordScore;\n  breakdown.keywordMatch = Math.round(keywordScore);\n  \n  // Total score (out of 100)\n  const totalScore = Math.round(score);\n  \n  scoredJobs.push({\n    json: {\n      ...job,\n      matchScore: totalScore,\n      scoreBreakdown: breakdown,\n      matchingSkills: matchingSkills\n    }\n  });\n}\n\n// Sort by score (highest first)\nscoredJobs.sort((a, b) => b.json.matchScore - a.json.matchScore);\n\nreturn scoredJobs;"
+      },
+      "id": "b4033575-fe32-4557-a73a-09b2a3f0a515",
+      "name": "Score Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.matchScore }}",
+              "rightValue": "={{ $('Job Search Config').first().json.minMatchScore }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "33d29d34-1fde-4a37-833a-07f1d45b813a",
+      "name": "Filter High Matches",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate results for email summary\nconst allJobs = $input.all();\nconst config = $('Job Search Config').first().json;\n\n// Get top 5 jobs\nconst topJobs = allJobs.slice(0, 5).map(item => ({\n  title: item.json.title,\n  company: item.json.company,\n  location: item.json.location,\n  matchScore: item.json.matchScore,\n  salary: item.json.salary,\n  url: item.json.applicationUrl,\n  skills: item.json.matchingSkills.join(', '),\n  breakdown: item.json.scoreBreakdown\n}));\n\n// Create email HTML\nconst emailHTML = `\n<div style=\"font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;\">\n  <h1 style=\"color: #2563eb;\">🎯 Your Daily Job Matches</h1>\n  <p style=\"color: #64748b; font-size: 14px;\">${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>\n  \n  <div style=\"background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0;\">\n    <p style=\"margin: 5px 0;\"><strong>Total Matches Found:</strong> ${allJobs.length}</p>\n    <p style=\"margin: 5px 0;\"><strong>Search Criteria:</strong> ${config.jobRole} | ${config.jobKeywords} | ${config.jobLocation}</p>\n    <p style=\"margin: 5px 0;\"><strong>Min Score Filter:</strong> ${config.minMatchScore}%</p>\n  </div>\n\n  <h2 style=\"color: #1e293b; margin-top: 30px;\">Top 5 Opportunities</h2>\n  \n  ${topJobs.map((job, index) => `\n    <div style=\"border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0; background: white;\">\n      <div style=\"display: flex; justify-content: space-between; align-items: start;\">\n        <h3 style=\"color: #1e293b; margin: 0 0 10px 0;\">${index + 1}. ${job.title}</h3>\n        <span style=\"background: #10b981; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px;\">${job.matchScore}% Match</span>\n      </div>\n      \n      <p style=\"color: #64748b; margin: 5px 0;\"><strong>🏢 Company:</strong> ${job.company}</p>\n      <p style=\"color: #64748b; margin: 5px 0;\"><strong>📍 Location:</strong> ${job.location}</p>\n      <p style=\"color: #64748b; margin: 5px 0;\"><strong>💰 Salary:</strong> ${job.salary}</p>\n      <p style=\"color: #64748b; margin: 5px 0;\"><strong>🎯 Matching Skills:</strong> ${job.skills || 'General match'}</p>\n      \n      <div style=\"background: #f8fafc; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 12px;\">\n        <strong>Score Breakdown:</strong> \n        Skill Match (${job.breakdown.skillMatch}) | \n        Location (${job.breakdown.locationMatch}) | \n        Job Type (${job.breakdown.jobTypeMatch}) | \n        Recency (${job.breakdown.recency}) | \n        Keywords (${job.breakdown.keywordMatch})\n      </div>\n      \n      <a href=\"${job.url}\" style=\"display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 10px; font-weight: bold;\">Apply Now →</a>\n    </div>\n  `).join('')}\n  \n  <div style=\"background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 30px 0; border-radius: 4px;\">\n    <p style=\"margin: 0; color: #92400e;\"><strong>📎 Your resume is attached to this email.</strong> Review the opportunities and apply directly!</p>\n  </div>\n  \n  <div style=\"text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0;\">\n    <p style=\"color: #94a3b8; font-size: 12px;\">All ${allJobs.length} matches have been saved to your Airtable Job Tracker</p>\n    <p style=\"color: #94a3b8; font-size: 12px;\">Good luck with your applications! 🚀</p>\n  </div>\n</div>\n`;\n\nreturn [{\n  json: {\n    totalJobs: allJobs.length,\n    topJobs: topJobs,\n    emailHTML: emailHTML,\n    slackMessage: `🎯 *Daily Job Hunt Results*\\n\\n*Found:* ${allJobs.length} high-match jobs\\n*Top Match:* ${topJobs[0]?.title} at ${topJobs[0]?.company} (${topJobs[0]?.matchScore}% match)\\n*Search:* ${config.jobRole} | ${config.jobKeywords}\\n\\n✉️ Check your email for full details!`\n  }\n}];"
+      },
+      "id": "df010e2e-9c1d-4c5a-a7b8-3c483050d93e",
+      "name": "Prepare Notifications",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appvAWd0Er07DN6bL",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblogAAVpX3BqS8yY",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Job Title": "={{ $json.title }}",
+            "Location": "={{ $json.location }}",
+            "Company": "={{ $json.company }}",
+            "Match Score": "={{ $json.matchScore }}",
+            "Skill Match": "={{ $json.scoreBreakdown.skillMatch }}",
+            "Location Match": "={{ $json.scoreBreakdown.locationMatch }}",
+            "Job Type Match": "={{ $json.scoreBreakdown.jobTypeMatch }}",
+            "Recency": "={{ $json.scoreBreakdown.recency }}",
+            "Keyword Match": "={{ $json.scoreBreakdown.keywordMatch }}",
+            "Application URL": "={{ $json.applicationUrl }}",
+            "Note": "={{ $json.description }}",
+            "Date Found": "={{ $json.postedDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Skills",
+              "displayName": "Skills",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Match Score",
+              "displayName": "Match Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Skill Match",
+              "displayName": "Skill Match",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location Match",
+              "displayName": "Location Match",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Job Type Match",
+              "displayName": "Job Type Match",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Recency",
+              "displayName": "Recency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Keyword Match",
+              "displayName": "Keyword Match",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Matching Skills",
+              "displayName": "Matching Skills",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Found",
+              "displayName": "Date Found",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Application URL",
+              "displayName": "Application URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "bb2ba85a-3d64-4701-aac9-475ceec9e99c",
+      "name": "Save to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        592
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "XHaxQD8z9NUjj2yI",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5658278232",
+        "text": "={{\n  $('Prepare Notifications').item.json.topJobs\n    .map(\n      (job, i) =>\n        `🏢Company: ${job.company}\\n💼Job Title: ${job.title}\\n🔗URL: ${job.url}`\n    )\n    .join('\\n-----------------\\n')\n}}\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        592
+      ],
+      "id": "c8e72a49-fc85-432a-bbfe-05e1c150ae8e",
+      "name": "Send a text message",
+      "webhookId": "e4017ad4-e439-45ea-807f-44ddbcf94fea",
+      "credentials": {
+        "telegramApi": {
+          "id": "UecYYiad14vftaXa",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily 9 AM Trigger": {
+      "main": [
+        [
+          {
+            "node": "Job Search Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Search Config": {
+      "main": [
+        [
+          {
+            "node": "Get User Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Profile": {
+      "main": [
+        [
+          {
+            "node": "Search Google Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Google Jobs": {
+      "main": [
+        [
+          {
+            "node": "Parse Job Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Job Results": {
+      "main": [
+        [
+          {
+            "node": "Score Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Jobs": {
+      "main": [
+        [
+          {
+            "node": "Filter High Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter High Matches": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Notifications": {
+      "main": [
+        [
+          {
+            "node": "Save to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "373ba657-1a25-4fde-8e24-d0b31bc2dc78",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2084427fd5078e794bd23076faa87fece11b24b3350937cae614c0a0e59c3ce3"
+  },
+  "id": "owILLsypt6vS9u5w",
+  "tags": []
+}
