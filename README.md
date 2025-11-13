@@ -1,26 +1,167 @@
-🚀 Automating My Job Hunt with n8n:
-Finding relevant internships manually every day can be time-consuming — so I decided to automate it! 🧠
-Here’s how my Job Hunt Automation System works:
-⚙️ Tech Stack:
-n8n for workflow automation
-Google Sheets for user configuration
-SerpAPI to fetch job listings
-Custom JS scoring logic to rank jobs based on:
-Skill Match
-Location Preference
-Job Type
+🚀 Job Hunt Automation System (n8n + SerpAPI + Airtable + Telegram)
+
+Finding relevant internships daily is painful — so I automated the entire process.
+This workflow fetches jobs, scores them intelligently, stores the best ones, and delivers top matches directly to Telegram every morning.
+
+🎯 Overview
+
+This system scans job listings across the web, ranks them using a custom scoring logic, and sends the top opportunities straight to your phone.
+Zero manual searching. Zero wasted time. 100% automated productivity.
+
+⚙️ Tech Stack
+
+n8n — Automation engine
+
+Google Sheets — User profile & job preferences
+
+SerpAPI — Aggregated job search via Google Jobs
+
+Custom JavaScript — Scoring logic (skills, keywords, location, recency, job type)
+
+Airtable — Job database & tracking dashboard
+
+Telegram Bot — Daily job digest notifications
+
+🧠 How the Automation Works
+
+Every day at 9 AM, the workflow runs automatically:
+
+Reads profile data from Google Sheets
+
+Searches Google Jobs via SerpAPI
+
+Parses and structures job results
+
+Scores each job using a weighted system:
+
+Skill Match (40%)
+
+Location Match (25%)
+
+Job Type Match (15%)
+
+Recency (10%)
+
+Keyword Relevance (10%)
+
+Filters high-match roles (≥ 60% score)
+
+Saves all results to Airtable for tracking
+
+Sends top 5 jobs to Telegram with:
+
+Company
+
+Job Title
+
+Match Score
+
+Apply Link
+
+🧩 Features
+✔ Smart Job Scoring
+
+Evaluates roles using a weighted algorithm to identify the most relevant matches.
+
+✔ Daily Auto-Execution
+
+Runs at 9 AM without manual intervention.
+
+✔ Airtable Integration
+
+Stores job listings with breakdown scores for analytics.
+
+✔ Telegram Alerts
+
+Instant daily digest of the 5 best opportunities.
+
+✔ Custom Config via Google Sheets
+
+Update your preferences without editing the workflow.
+
+📊 Output Examples
+Airtable Dashboard
+
+Job title
+
+Company
+
+Location
+
+Match score
+
+Skill match
+
 Recency
-Keyword Relevance
-Airtable for storing and tracking all results
-Telegram Bot for daily notifications with top matches 📱
-💡 How it works (automatically every morning at 9 AM):
- 1️⃣ Reads my profile and job preferences from Google Sheets
- 2️⃣ Searches jobs across multiple platforms via Google Jobs
- 3️⃣ Scores and filters results (min match ≥ 60%)
- 4️⃣ Saves top matches to Airtable
- 5️⃣ Sends me a daily job digest via Telegram — complete with company name, title, and direct apply links 🔗
-🧩 Output:
-A structured Airtable dashboard with all job details
-Instant Telegram message with the top 5 high-match roles
-Automated and consistent job discovery — no manual searching needed!
-This project taught me how to blend automation, APIs, and data processing for real-world productivity gains.
+
+Keyword relevance
+
+Apply link
+
+Posted date
+
+Telegram Digest Sample
+🏢 Company: XYZ
+💼 Job: Data Science Intern
+🔗 Apply: https://...
+-----------------
+🏢 Company: ABC
+💼 Job: Machine Learning Intern
+🔗 Apply: https://...
+
+🛠 Workflow Architecture
+[Daily Trigger]
+      ↓
+[Google Sheets: User Profile]
+      ↓
+[SerpAPI: Job Search]
+      ↓
+[Parse Job Results]
+      ↓
+[Score Jobs (JS Logic)]
+      ↓
+[Filter High Matches]
+      ↓
+[Prepare Notifications (Email/Slack/Telegram)]
+      ↓
+[Airtable Storage]
+      ↓
+[Telegram Bot Notification]
+
+🧩 Key Files
+
+Job Hunt Automation - Optimized.json
+Complete n8n workflow
+
+
+Job Hunt Automation - Optimized
+
+📚 Skills Demonstrated
+
+API integration (SerpAPI, Telegram, Airtable)
+
+Automation with n8n
+
+Data parsing & transformation
+
+Ranking algorithms
+
+No-code + low-code workflow engineering
+
+Notification system design
+
+Real-world productivity automation
+
+🚀 Future Improvements
+
+Resume-based skill extraction
+
+Multi-platform job scraping (LinkedIn, Indeed)
+
+ML model for relevance ranking
+
+Email digest with richer UI
+
+💡 Summary
+
+This system removes the daily grind of job searching by automating the entire pipeline — from discovery to ranking to notification. A real-world productivity boost using smart automation and APIs.
